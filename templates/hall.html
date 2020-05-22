@@ -48,7 +48,6 @@
         function showTableInfo(id) {
             $(`.table-info`).css('display', 'none')
             $(`.table-info-${id}`).css('display', 'block')
-            console.log(id)
         }
 
         let tableSelector = $(".tables-custom");
@@ -61,7 +60,6 @@
                 data: serializedData,
                 contentType: 'application/json',
                 success: function (response) {
-                    console.log(response)
                     let b = JSON.parse(response.tables)
                     $('.tables-custom').removeClass('reserved')
                     b.map(l => {
