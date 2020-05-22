@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+    <div class="container">
+        {% include 'welcome.html' %}
+        <h1 class="title has-text-centered" style="margin-top: 4% !important;">Залы:</h1>
+        <div class="is-flex has-text-centered hall-custom">
+            {% for hall in halls %}
+                <a href="{% url 'hall_detail' hall.hall_slug %}">
+                    <div class="title is-4" style="margin-top: 2%;">
+                        <div class="column is-four-fifths hall-custom-card">
+                            <h3 class="custom-color custom-padding">{{ hall.name }}</h3>
+                        </div>
+                    </div>
+                </a>
+            {% endfor %}
+        </div>
+    </div>
+
+{% endblock %}

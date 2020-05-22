@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+{% block content %}
+    <div class="container">
+        {% include 'welcome.html' %}
+        <h1 class="title has-text-centered" style="margin-top: 4% !important;">Зал: {{ object.name }}</h1>
+        {{ mytext }}
+        <form class="has-text-centered" method="post" id="reserve">
+            {% csrf_token %}
+            <p class="title is-4" style="margin-bottom: 3%">Выберите дату и
+                столик: {% render_field form.date|add_class:'datapicker' type='date' %}</p>
+            <div id="reserve_data" style="margin-bottom: 3%;" hidden>
+                Имя: {% render_field form.name %}
+                Email: {% render_field form.email %}
+                {% render_field form.table %}
+                {% render_field form.hall %}
+                <input type="submit" value="Забронировать">
+            </div>
+        </form>
+
+        <div class="container-hall">
+            <div class="margin-custom"
+                 style="width: {{ object.width }}% !important; height: {{ object.height }}vh !important;
+                         background-color: #00C4A7">
+                {% for table in tables %}
+                    <div class="table-info-{{ table.number }} table-info">
+                        <p>Тип стола: <strong>{{ table.get_shape_display }}</strong></p>
+                        <p>Кол-во мест: <strong>{{ table.seats }}</strong></p>
+                        <p>Ширина стола (м): <strong>{{ table.width }}</strong></p>
+                        <p>Длина стола (м): <strong>{{ table.height }}</strong></p>
+                    </div>
+                    <div onclick="showTableInfo({{ table.number }})"
+                         class="tables-custom has-text-centered click" id="table{{ table.number }}"
+                         style="left:{{ table.coordinate_x }}%; margin-top: {{ table.coordinate_y }}%; cursor: pointer;">
+                        {{ table.number }}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="form-success title is-4 has-text-centered">
+            <p>Спасибо за бронирование, пахнуть буде вкусно!</p>
+            <a href="/">На главную!</a>
+        </div>
+    </div>
+    <script>
+
+        function showTableInfo(id) {
+            $(`.table-info`).css('display', 'none')
+            $(`.table-info-${id}`).css('display', 'block')
+            console.log(id)
+        }
+
+        let tableSelector = $(".tables-custom");
+        $(".datapicker").change(function (e) {
+            let serializedData = $(this).serialize();
+            e.preventDefault();
+            $.ajax({
+                type: 'GET',
+                url: "{% url 'check_free_table' %}",
+                data: serializedData,
+                contentType: 'application/json',
+                success: function (response) {
+                    console.log(response)
+                    let b = JSON.parse(response.tables)
+                    $('.tables-custom').removeClass('reserved')
+                    b.map(l => {
+                        let tableNum = l.fields.number;
+                        $(`#table${tableNum}`).addClass('reserved')
+                    })
+
+
+                }
+            })
+        })
+    </script>
+    <script>
+        let tableNumber;
+        let isFormVisible = false;
+        let tablesCustom = $(".tables-custom")
+        tablesCustom.click(function () {
+            isFormVisible = true;
+            $("#reserve_data").show();
+            tablesCustom.removeClass('active')
+            $(this).toggleClass("active");
+
+            if (tableNumber === $(this).text().trim()) {
+                isFormVisible = false;
+                $("#reserve_data").hide();
+                $(this).removeClass('active')
+                tableNumber = null;
+                return;
+            }
+            tableNumber = $(this).text().trim()
+            $(`#id_table option:contains(${tableNumber})`).prop('selected', true);
+
+        });
+        $("#reserve").submit(function (e) {
+            e.preventDefault();
+            let serializedData = $(this).serializeArray();
+            $.ajax({
+                type: 'POST',
+                url: "{% url 'reserve_table' %}",
+                data: serializedData,
+                success: function (response) {
+                    console.log(response)
+                    $('.container-hall').hide()
+                    $('#reserve').hide()
+                    $('.form-success').fadeIn('slow/500/fast')
+                }
+            })
+        })
+    </script>
+{% endblock %}

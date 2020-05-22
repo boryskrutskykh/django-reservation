@@ -1,0 +1,19 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+
+[packages]
+django = "*"
+environs = "*"
+celery = "*"
+unidecode = "*"
+django-autoslug = "*"
+django-widget-tweaks = "*"
+psycopg2-binary = "*"
+redis = "*"
+
+[requires]
+python_version = "3.8"
